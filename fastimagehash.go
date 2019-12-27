@@ -78,27 +78,43 @@ type MultiHash struct {
 }
 
 func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
-	goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize))
-	C.free(unsafe.Pointer(hash))
+	if ret == Ok {
+		goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize))
+		C.free(unsafe.Pointer(hash))
+
+		return &Hash{
+			Size:  hashSize,
+			Bytes: goHash,
+		}, Code(ret)
+	}
 
 	return &Hash{
 		Size:  hashSize,
-		Bytes: goHash,
+		Bytes: nil,
 	}, Code(ret)
 }
 
 func retMultiHash(m *C.multi_hash_t, hashSize int, ret C.int) (*MultiHash, Code) {
-	goPHash := C.GoBytes(unsafe.Pointer(m.phash), C.int(hashSize))
-	goAHash := C.GoBytes(unsafe.Pointer(m.ahash), C.int(hashSize))
-	goDHash := C.GoBytes(unsafe.Pointer(m.dhash), C.int(hashSize))
-	goWHash := C.GoBytes(unsafe.Pointer(m.whash), C.int(hashSize))
-	C.multi_hash_destroy(m)
+	if ret == Ok {
+		goPHash := C.GoBytes(unsafe.Pointer(m.phash), C.int(hashSize))
+		goAHash := C.GoBytes(unsafe.Pointer(m.ahash), C.int(hashSize))
+		goDHash := C.GoBytes(unsafe.Pointer(m.dhash), C.int(hashSize))
+		goWHash := C.GoBytes(unsafe.Pointer(m.whash), C.int(hashSize))
+		C.multi_hash_destroy(m)
+
+		return &MultiHash{
+			PHash: Hash{hashSize, goPHash},
+			AHash: Hash{hashSize, goAHash},
+			DHash: Hash{hashSize, goDHash},
+			WHash: Hash{hashSize, goWHash},
+		}, Code(ret)
+	}
 
 	return &MultiHash{
-		PHash: Hash{hashSize, goPHash},
-		AHash: Hash{hashSize, goAHash},
-		DHash: Hash{hashSize, goDHash},
-		WHash: Hash{hashSize, goWHash},
+		PHash: Hash{hashSize, nil},
+		AHash: Hash{hashSize,nil },
+		DHash: Hash{hashSize,nil },
+		WHash: Hash{hashSize,nil },
 	}, Code(ret)
 }
 

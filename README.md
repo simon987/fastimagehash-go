@@ -11,9 +11,8 @@ for `fastimagehash-go` to compile.
 package main
 
 import (
-	"github.com/simon987/fastimagehash-go"
 	"fmt"
-)
+	"github.com/simon987/fastimagehash-go" )
 
 func main() {
 	hash, ret := fastimagehash.PHashFile("/path/to/image.jpg", 8,  4)
