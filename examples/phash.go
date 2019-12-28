@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
+	fmt.Println(fastimagehash.LibVersion);
+
 	hash, ret := fastimagehash.PHashFile("/path/to/image.jpg", 8, 4)
 
 	if ret == fastimagehash.Ok {

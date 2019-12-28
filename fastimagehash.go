@@ -13,6 +13,8 @@ import (
 #include <stdlib.h>
 #include <string.h>
 
+const char* Version = FASTIMAGEHASH_VERSION;
+
 char *hash_to_hex_string_reversed_wr(void *h, int size) {
 	char *out = malloc(size * 2 + 1);
 	hash_to_hex_string_reversed((uchar*)h, out, size);
@@ -99,6 +101,8 @@ type MultiHash struct {
 	WHash Hash
 	MHash Hash
 }
+
+var LibVersion = C.GoString(C.Version)
 
 func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
 	if ret == Ok {
