@@ -185,13 +185,7 @@ func PHashFile(filepath string, hashSize, highFreqFactor int) (*Hash, Code) {
 
 func PHashMem(buf []byte, hashSize, highFreqFactor int) (*Hash, Code) {
 	var ret C.int
-
-	p := C.malloc(C.size_t(len(buf)))
-	cBuf := (*[1 << 30]byte)(p)
-	copy(cBuf[:], buf)
-
-	hash := C.phash_mem_wr(p, C.size_t(len(buf)), C.int(hashSize), C.int(highFreqFactor), &ret)
-	C.free(p)
+	hash := C.phash_mem_wr(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), C.int(hashSize), C.int(highFreqFactor), &ret)
 	return retHash(hash, hashSize, ret)
 }
 
