@@ -106,7 +106,7 @@ var LibVersion = C.GoString(C.Version)
 
 func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
 	if ret == Ok {
-		goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize))
+		goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize * hashSize / 8))
 		C.free(unsafe.Pointer(hash))
 
 		return &Hash{
@@ -123,11 +123,11 @@ func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
 
 func retMultiHash(m *C.multi_hash_t, hashSize int, ret C.int) (*MultiHash, Code) {
 	if ret == Ok {
-		goPHash := C.GoBytes(unsafe.Pointer(m.phash), C.int(hashSize))
-		goAHash := C.GoBytes(unsafe.Pointer(m.ahash), C.int(hashSize))
-		goDHash := C.GoBytes(unsafe.Pointer(m.dhash), C.int(hashSize))
-		goWHash := C.GoBytes(unsafe.Pointer(m.whash), C.int(hashSize))
-		goMHash := C.GoBytes(unsafe.Pointer(m.mhash), C.int(hashSize))
+		goPHash := C.GoBytes(unsafe.Pointer(m.phash), C.int(hashSize * hashSize / 8))
+		goAHash := C.GoBytes(unsafe.Pointer(m.ahash), C.int(hashSize * hashSize / 8))
+		goDHash := C.GoBytes(unsafe.Pointer(m.dhash), C.int(hashSize * hashSize / 8))
+		goWHash := C.GoBytes(unsafe.Pointer(m.whash), C.int(hashSize * hashSize / 8))
+		goMHash := C.GoBytes(unsafe.Pointer(m.mhash), C.int(hashSize * hashSize / 8))
 		C.multi_hash_destroy(m)
 
 		return &MultiHash{
