@@ -28,31 +28,31 @@ char *hash_to_hex_string_wr(void *h, int size) {
 }
 
 uchar *phash_mem_wr(void *buf, size_t buf_len, int hash_size, int highfreq_factor, int* ret) {
-	uchar *out = malloc(hash_size * 2 / 8);
+	uchar *out = malloc(hash_size * hash_size / 8);
 	*ret = phash_mem((uchar*)buf, buf_len, out, hash_size, highfreq_factor);
 	return out;
 }
 
 uchar *ahash_mem_wr(void *buf, size_t buf_len, int hash_size, int* ret) {
-	uchar *out = malloc(hash_size * 2 / 8);
+	uchar *out = malloc(hash_size * hash_size / 8);
 	*ret = ahash_mem((uchar*)buf, buf_len, out, hash_size);
 	return out;
 }
 
 uchar *mhash_mem_wr(void *buf, size_t buf_len, int hash_size, int* ret) {
-	uchar *out = malloc(hash_size * 2 / 8);
+	uchar *out = malloc(hash_size * hash_size / 8);
 	*ret = mhash_mem((uchar*)buf, buf_len, out, hash_size);
 	return out;
 }
 
 uchar *dhash_mem_wr(void *buf, size_t buf_len, int hash_size, int* ret) {
-	uchar *out = malloc(hash_size * 2 / 8);
+	uchar *out = malloc(hash_size * hash_size / 8);
 	*ret = dhash_mem((uchar*)buf, buf_len, out, hash_size);
 	return out;
 }
 
 uchar *whash_mem_wr(void *buf, size_t buf_len, int hash_size, int img_scale, int* ret, _GoString_ go_wname) {
-	uchar *out = malloc(hash_size * 2 / 8);
+	uchar *out = malloc(hash_size * hash_size / 8);
 
 	if (strncmp(_GoStringPtr(go_wname), "haar", 4) == 0) {
 		*ret = whash_mem((uchar*)buf, buf_len, out, hash_size, img_scale, "haar");
