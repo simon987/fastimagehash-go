@@ -16,13 +16,13 @@ import (
 const char* Version = FASTIMAGEHASH_VERSION;
 
 char *hash_to_hex_string_reversed_wr(void *h, int size) {
-	char *out = malloc(size * 2 + 1);
+	char *out = malloc(size * size / 4 + 1);
 	hash_to_hex_string_reversed((uchar*)h, out, size);
 	return out;
 }
 
 char *hash_to_hex_string_wr(void *h, int size) {
-	char *out = malloc(size * 2 + 1);
+	char *out = malloc(size * size / 4 + 1);
 	hash_to_hex_string((uchar*)h, out, size);
 	return out;
 }
