@@ -90,8 +90,8 @@ const (
 )
 
 type Hash struct {
-	Size  int
-	Bytes []byte
+	Size  int `json:"size"`
+	Bytes []byte `json:"bytes"`
 }
 
 type MultiHash struct {
