@@ -162,14 +162,14 @@ func readAll(filepath string) ([]byte, error) {
 }
 
 func (h *Hash) ToHexStringReversed() (ret string) {
-	out := C.hash_to_hex_string_reversed_wr(unsafe.Pointer(&h.Bytes[0]), C.int(h.Size))
+	out := C.hash_to_hex_string_reversed_wr(unsafe.Pointer(&h.Bytes[0]), C.int(h.Size * h.Size / 8))
 	ret = C.GoString(out)
 	C.free(unsafe.Pointer(out))
 	return
 }
 
 func (h *Hash) ToHexString() (ret string) {
-	out := C.hash_to_hex_string_wr(unsafe.Pointer(&h.Bytes[0]), C.int(h.Size))
+	out := C.hash_to_hex_string_wr(unsafe.Pointer(&h.Bytes[0]), C.int(h.Size * h.Size / 8))
 	ret = C.GoString(out)
 	C.free(unsafe.Pointer(out))
 	return
