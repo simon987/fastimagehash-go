@@ -51,26 +51,16 @@ uchar *dhash_mem_wr(void *buf, size_t buf_len, int hash_size, int* ret) {
 	return out;
 }
 
-uchar *whash_mem_wr(void *buf, size_t buf_len, int hash_size, int img_scale, int* ret, _GoString_ go_wname) {
+uchar *whash_mem_wr(void *buf, size_t buf_len, int hash_size, int img_scale, int remove_max_ll, int* ret, _GoString_ go_wname) {
 	uchar *out = malloc(hash_size * hash_size / 8);
 
 	if (strncmp(_GoStringPtr(go_wname), "haar", 4) == 0) {
-		*ret = whash_mem((uchar*)buf, buf_len, out, hash_size, img_scale, "haar");
+		*ret = whash_mem((uchar*)buf, buf_len, out, hash_size, img_scale, remove_max_ll, "haar");
 	} else {
-		*ret = whash_mem((uchar*)buf, buf_len, out, hash_size, img_scale, "db4");
+		*ret = whash_mem((uchar*)buf, buf_len, out, hash_size, img_scale, remove_max_ll, "db4");
 	}
 
 	return out;
-}
-
-multi_hash_t *multi_mem_wr(void* buf, size_t buf_len, int hash_size, int ph_highfreq_factor, int wh_img_scale, int* ret, _GoString_ go_wname) {
-	multi_hash_t *m = multi_hash_create(hash_size);
-	if (strncmp(_GoStringPtr(go_wname), "haar", 4) == 0) {
-		*ret = multi_hash_mem(buf, buf_len, m, hash_size, ph_highfreq_factor, wh_img_scale, "haar");
-	} else {
-		*ret = multi_hash_mem(buf, buf_len, m, hash_size, ph_highfreq_factor, wh_img_scale, "db4");
-	}
-	return m;
 }
 */
 import "C"
@@ -78,35 +68,28 @@ import "C"
 type Code int
 
 const (
-	Ok = 0
-	ReadErr Code = -2
+	Ok             = 0
+	ReadErr   Code = -2
 	DecodeErr Code = -3
 )
 
 type Wave string
+
 const (
-	Haar = "haar"
+	Haar       = "haar"
 	Daubechies = "db4"
 )
 
 type Hash struct {
-	Size  int `json:"size"`
+	Size  int    `json:"size"`
 	Bytes []byte `json:"bytes"`
-}
-
-type MultiHash struct {
-	PHash Hash
-	AHash Hash
-	DHash Hash
-	WHash Hash
-	MHash Hash
 }
 
 var LibVersion = C.GoString(C.Version)
 
 func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
 	if ret == Ok {
-		goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize * hashSize / 8))
+		goHash := C.GoBytes(unsafe.Pointer(hash), C.int(hashSize*hashSize/8))
 		C.free(unsafe.Pointer(hash))
 
 		return &Hash{
@@ -118,33 +101,6 @@ func retHash(hash *C.uchar, hashSize int, ret C.int) (*Hash, Code) {
 	return &Hash{
 		Size:  hashSize,
 		Bytes: nil,
-	}, Code(ret)
-}
-
-func retMultiHash(m *C.multi_hash_t, hashSize int, ret C.int) (*MultiHash, Code) {
-	if ret == Ok {
-		goPHash := C.GoBytes(unsafe.Pointer(m.phash), C.int(hashSize * hashSize / 8))
-		goAHash := C.GoBytes(unsafe.Pointer(m.ahash), C.int(hashSize * hashSize / 8))
-		goDHash := C.GoBytes(unsafe.Pointer(m.dhash), C.int(hashSize * hashSize / 8))
-		goWHash := C.GoBytes(unsafe.Pointer(m.whash), C.int(hashSize * hashSize / 8))
-		goMHash := C.GoBytes(unsafe.Pointer(m.mhash), C.int(hashSize * hashSize / 8))
-		C.multi_hash_destroy(m)
-
-		return &MultiHash{
-			PHash: Hash{hashSize, goPHash},
-			AHash: Hash{hashSize, goAHash},
-			DHash: Hash{hashSize, goDHash},
-			WHash: Hash{hashSize, goWHash},
-			MHash: Hash{hashSize, goMHash},
-		}, Code(ret)
-	}
-
-	return &MultiHash{
-		PHash: Hash{hashSize, nil},
-		AHash: Hash{hashSize, nil},
-		DHash: Hash{hashSize, nil},
-		WHash: Hash{hashSize, nil},
-		MHash: Hash{hashSize, nil},
 	}, Code(ret)
 }
 
@@ -231,31 +187,22 @@ func DHashMem(buf []byte, hashSize int) (*Hash, Code) {
 	return retHash(hash, hashSize, ret)
 }
 
-func WHashFile(filepath string, hashSize, imgScale int, wave Wave) (*Hash, Code) {
+func WHashFile(filepath string, hashSize, imgScale int, removeMaxLL bool, wave Wave) (*Hash, Code) {
 	bytes, err := readAll(filepath)
 	if err != nil {
 		return nil, ReadErr
 	}
-	return WHashMem(bytes, hashSize, imgScale, wave)
+	return WHashMem(bytes, hashSize, imgScale, removeMaxLL, wave)
 }
 
-func WHashMem(buf []byte, hashSize, imgScale int, wave Wave) (*Hash, Code) {
+func WHashMem(buf []byte, hashSize, imgScale int, removeMaxLL bool, wave Wave) (*Hash, Code) {
 	var ret C.int
-	hash := C.whash_mem_wr(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), C.int(hashSize), C.int(imgScale), &ret, string(wave))
+	var remove_max_ll C.int
+	if removeMaxLL {
+		remove_max_ll = 1
+	} else {
+		remove_max_ll = 0
+	}
+	hash := C.whash_mem_wr(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), C.int(hashSize), C.int(imgScale), remove_max_ll, &ret, string(wave))
 	return retHash(hash, hashSize, ret)
-}
-
-func MultiHashFile(filepath string, hashSize, phHighFreqFactor, whImgScale int, wave Wave) (*MultiHash, Code) {
-	bytes, err := readAll(filepath)
-	if err != nil {
-		return nil, ReadErr
-	}
-	return MultiHashMem(bytes, hashSize, phHighFreqFactor, whImgScale, wave)
-}
-
-func MultiHashMem(buf []byte, hashSize, phHighFreqFactor, whImgScale int, wave Wave) (*MultiHash, Code) {
-	var ret C.int
-	m := C.multi_mem_wr(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), C.int(hashSize),
-		C.int(phHighFreqFactor), C.int(whImgScale), &ret, string(wave))
-	return retMultiHash(m, hashSize, ret)
 }
